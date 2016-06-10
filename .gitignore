@@ -1,1 +1,21 @@
 
+.gradle/
+.idea/compiler.xml
+.idea/copyright/
+.idea/encodings.xml
+.idea/gradle.xml
+.idea/inspectionProfiles/
+.idea/libraries/
+.idea/misc.xml
+.idea/modules.xml
+.idea/runConfigurations.xml
+.idea/vcs.xml
+.idea/workspace.xml
+CityHunter(Betta).iml
+app/app.iml
+build/
+gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
+local.properties
+app.iml
