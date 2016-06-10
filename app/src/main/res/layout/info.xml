@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:fillViewport="false"
+        android:focusable="false"
+        android:longClickable="false"
+        android:measureAllChildren="false"
+        android:nestedScrollingEnabled="false"
+        android:scrollbars="none"
+        android:touchscreenBlocksFocus="false"
+        android:transitionGroup="false">
+
+        <LinearLayout xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/linLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            tools:context="ru.xakerd.cityhunter.ActivityInfo">
+
+
+
+                <com.daimajia.slider.library.SliderLayout
+                    android:id="@+id/slider"
+                    android:layout_width="match_parent"
+
+                    android:layout_height="280dp"
+                    android:paddingBottom="15dp" />
+
+
+
+            <TextView
+                android:id="@+id/btnlocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:clickable="false"
+                android:drawableLeft="@drawable/ic_action_location"
+                android:focusable="false"
+                android:gravity="left|center"
+                android:longClickable="false"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:singleLine="false"
+                android:textColor="#029acc"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/textTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:drawableLeft="@drawable/ic_action_clock"
+                android:gravity="left|center"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textColor="#0d9ece"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/btnprice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:drawableLeft="@drawable/ic_action_paypal"
+                android:gravity="left|center"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="ЦЕНЫ"
+                android:textColor="#029acc"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingBottom="15dp"
+                android:textColor="#000000" />
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
