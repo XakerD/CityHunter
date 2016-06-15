@@ -6,13 +6,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -21,9 +20,7 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,7 +32,6 @@ import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.SliderTypes.DefaultSliderView;
 import com.daimajia.slider.library.Tricks.ViewPagerEx;
-import com.squareup.picasso.Callback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,19 +44,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
-/**
- * Created by User on 01.06.2016.
- */
-public class ActivityInfo extends Activity implements View.OnClickListener, BaseSliderView.OnSliderClickListener,
+
+public class InfoActivity extends Activity implements View.OnClickListener, BaseSliderView.OnSliderClickListener,
         ViewPagerEx.OnPageChangeListener {
 
-    String latitude, longitude, address, title, price_value;
+    private String latitude, longitude, title, priceValue;
     private SliderLayout imageSlider;
-    static String post_id,post_title;
-    TextView description, textTime;
-    TextView btnprice,btnlocation;
-    LinearLayout linLayout;
-    ProgressDialog progressDialog;
+    private String postId;
+    private TextView description;
+    private TextView btnPrice, btnLocation,btnTimeInfo;
+    private LinearLayout infoLayout;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,22 +71,27 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
 
         imageSlider = (SliderLayout) findViewById(R.id.slider);
         imageSlider.stopAutoCycle();
-        btnlocation = (TextView) findViewById(R.id.btnlocation);
-        btnprice = (TextView) findViewById(R.id.btnprice);
-        btnprice.setOnClickListener(this);
-        btnlocation.setOnClickListener(this);
+
+        btnLocation = (TextView) findViewById(R.id.btnlocation);
+        btnLocation.setOnClickListener(this);
+
+        btnPrice = (TextView) findViewById(R.id.btnprice);
+        btnPrice.setOnClickListener(this);
+
         description = (TextView) findViewById(R.id.description);
-        textTime = (TextView) findViewById(R.id.textTime);
+        btnTimeInfo = (TextView) findViewById(R.id.textTime);
+
         Bundle extras = getIntent().getExtras();
-        post_id = extras.getString(post_id);
-        post_title = extras.getString("title");
-        toolbar_title.setText(post_title);
-        linLayout = (LinearLayout) findViewById(R.id.linLayout);
+        postId = extras.getString("id");
+        String postTitle = extras.getString("title");
+
+        toolbar_title.setText(postTitle);
+        infoLayout = (LinearLayout) findViewById(R.id.linLayout);
         if (isNetworkConnected())
         new ParseTask().execute();
         else
         { progressDialog.hide();
-            Toast.makeText(this,"Подключитесь к сети",Toast.LENGTH_SHORT).show();}
+            Toast.makeText(this,getResources().getString(R.string.is_connected),Toast.LENGTH_SHORT).show();}
 
     }
 
@@ -107,31 +106,23 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
 
     @Override
     public void onClick(View v) {
-        if (v.getId()==R.id.btnBack)
-        {super.onBackPressed();
-        return;}
-        //Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+77027631259"));
-        if ((v.getId() != R.id.btnlocation) && (v.getId() != R.id.btnprice)) {
-            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + ((Button) v).getText()));
-
-            startActivity(intent);
-        } else {
-            //String uri = "geo:"+ latitude + "," + longitude;
-            //Intent mapIntent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
-            if (v.getId() == R.id.btnlocation) {
+        switch (v.getId()) {
+            case R.id.btnBack:
+                super.onBackPressed();
+                break;
+            case R.id.btnlocation:
                 if (!TextUtils.isEmpty(latitude)) {
-                    Intent mapIntent = new Intent(ActivityInfo.this, MapsActivity.class);
+                    Intent mapIntent = new Intent(InfoActivity.this, MapsActivity.class);
                     mapIntent.putExtra("latitude", latitude);
                     mapIntent.putExtra("longitude", longitude);
                     mapIntent.putExtra("title", title);
                     startActivity(mapIntent);
                 }
-            }
-
-            if (v.getId() == R.id.btnprice) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(ActivityInfo.this);
+                break;
+            case R.id.btnprice:
+                AlertDialog.Builder builder = new AlertDialog.Builder(InfoActivity.this);
                 builder
-                        .setMessage(price_value)
+                        .setMessage(priceValue)
                         .setCancelable(false)
                         .setNegativeButton("ОК",
                                 new DialogInterface.OnClickListener() {
@@ -141,7 +132,12 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
                                 });
                 AlertDialog alert = builder.create();
                 alert.show();
-            }
+                break;
+            default:
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + ((Button) v).getText()));
+                startActivity(intent);
+                break;
+
         }
     }
 
@@ -155,23 +151,23 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
         protected String doInBackground(Void... params) {
             // получаем данные с внешнего ресурса
             try {
-                URL url = new URL("http://api.cityhunter.kz/posts/" + post_id);
+                URL url = new URL(getResources().getString(R.string.url_info) + postId);
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
 
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder builder = new StringBuilder();
 
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
+                    builder.append(line);
                 }
 
-                resultJson = buffer.toString();
+                resultJson = builder.toString();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -182,33 +178,16 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
         protected void onPostExecute(String strJson) {
             super.onPostExecute(strJson);
             // выводим целиком полученную json-строку
-            JSONObject dataJsonObj = null;
+            JSONObject dataJsonObj;
             try {
                 dataJsonObj = new JSONObject(strJson);
-                String post_description = Html.fromHtml(dataJsonObj.getString("description")).toString();
-                description.setText(post_description);
-                if (!TextUtils.isEmpty(post_description))
+
+                title = dataJsonObj.getString("title");
+
+                String postDescription = Html.fromHtml(dataJsonObj.getString("description")).toString();
+                description.setText(postDescription);
+                if (!TextUtils.isEmpty(postDescription))
                     description.setVisibility(View.VISIBLE);
-
-                JSONArray myinfo = new JSONArray(dataJsonObj.getString("info"));
-                JSONObject phone = myinfo.getJSONObject(2);
-                String valuephone[] = phone.getString("value").split(";");
-                final Context contextThemeWrapper = new ContextThemeWrapper(getApplicationContext(), R.style.myStyle);
-                Button[] mybtn = new Button[valuephone.length];
-
-                JSONObject jsonaddress = myinfo.getJSONObject(1);
-                address = jsonaddress.getString("value");
-                btnlocation.setText(address);
-                btnlocation.setVisibility(View.VISIBLE);
-
-                try {
-                    JSONObject jsontime = myinfo.getJSONObject(3);
-                    String mytime = jsontime.getString("value");
-                    textTime.setText(mytime);
-                    textTime.setVisibility(View.VISIBLE);
-                } catch (JSONException e1) {
-                    e1.printStackTrace();
-                }
 
                 try {
                     JSONObject coordinates = dataJsonObj.getJSONObject("coordinates");
@@ -218,58 +197,76 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
                     e1.printStackTrace();
                 }
 
-                try {
-                    JSONObject json_price = myinfo.getJSONObject(4);
-                    price_value = json_price.getString("value");
-                    btnprice.setVisibility(View.VISIBLE);
-                } catch (JSONException e1) {
-                    e1.printStackTrace();
-                }
+                JSONArray info = new JSONArray(dataJsonObj.getString("info"));
 
-                final float scale = getResources().getDisplayMetrics().density;
-                LinearLayout.LayoutParams centerGravityParams = new LinearLayout.LayoutParams(
-                        (int) (250 * scale + 0.5f), LinearLayout.LayoutParams.WRAP_CONTENT);
-                centerGravityParams.gravity = Gravity.CENTER;
+                for (int i=0;i<info.length();i++){
+                    JSONObject objectInfo = info.getJSONObject(i);
+                    String caption = objectInfo.getString("caption");
 
-                centerGravityParams.setMargins(0, 0, 0, (int) (10 * scale + 0.5f));
+                    switch (caption){
+                        case "Адрес":
+                            String address;
+                            address = objectInfo.getString("value");
+                            btnLocation.setText(address);
+                            btnLocation.setVisibility(View.VISIBLE);
+                            break;
 
-                for (int i = 0; i < valuephone.length; i++) {
-                    mybtn[i] = new Button(contextThemeWrapper);
-                    mybtn[i].setText(valuephone[i]);
-                    // mybtn[i].setPadding(0, 0, 0, (int) (10 * scale + 0.5f));
-                    mybtn[i].setBackgroundColor(Color.parseColor("#4b5cb9"));
-                    mybtn[i].setOnClickListener(ActivityInfo.this);
-                    linLayout.addView(mybtn[i], centerGravityParams);
+                        case "Время работы":
+                            String timeInfo = objectInfo.getString("value");
+                            btnTimeInfo.setText(timeInfo);
+                            btnTimeInfo.setVisibility(View.VISIBLE);
+                            break;
+
+                        case "Телефон":
+                            String valuePhone[] = objectInfo.getString("value").split(";");
+
+                            final float scale = getResources().getDisplayMetrics().density;
+                            LinearLayout.LayoutParams centerGravityParams = new LinearLayout.LayoutParams(
+                                    (int) (250 * scale + 0.5f), LinearLayout.LayoutParams.WRAP_CONTENT);
+                            centerGravityParams.gravity = Gravity.CENTER;
+                            centerGravityParams.setMargins(0, 0, 0, (int) (10 * scale + 0.5f));
+
+                            final Context contextThemeWrapper = new ContextThemeWrapper(getApplicationContext(), R.style.myStyle);
+                            Button[] btnPhone = new Button[valuePhone.length];
+                            for (int j = 0; j < valuePhone.length; j++) {
+                                btnPhone[j] = new Button(contextThemeWrapper);
+                                btnPhone[j].setText(valuePhone[j]);
+                                btnPhone[j].setBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.colorPrimary));
+                                btnPhone[j].setOnClickListener(InfoActivity.this);
+                                infoLayout.addView(btnPhone[j], centerGravityParams);
+                            }
+                            break;
+
+                        case "Цены":
+                            priceValue = objectInfo.getString("value");
+                            btnPrice.setVisibility(View.VISIBLE);
+                            break;
+
+                    }
 
                 }
 
                 JSONArray images = dataJsonObj.getJSONArray("images");
-                HashMap<String, String> image_maps = new HashMap<String, String>();
-                title = dataJsonObj.getString("title");
+                HashMap<String, String> image_maps = new HashMap<>();
                 for (int i = 0; i < images.length(); i++) {
-                    image_maps.put("name" + Integer.toString(i),
+                    image_maps.put("image" + Integer.toString(i),
                             "http://" + images.get(i));
                 }
-
                 for (String name : image_maps.keySet()) {
                     DefaultSliderView defaultSliderView = new DefaultSliderView(getApplicationContext());
-                    // initialize a SliderLayout
                     defaultSliderView
                             .image(image_maps.get(name))
                             .setScaleType(BaseSliderView.ScaleType.CenterCrop)
-                            .setOnSliderClickListener(ActivityInfo.this);
-
-
+                            .setOnSliderClickListener(InfoActivity.this);
                     imageSlider.addSlider(defaultSliderView);
                 }
                 imageSlider.setPresetTransformer(SliderLayout.Transformer.Default);
                 imageSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
                 imageSlider.setCustomAnimation(new DescriptionAnimation());
                 imageSlider.setDuration(3000);
-                imageSlider.addOnPageChangeListener(ActivityInfo.this);
-
-                progressDialog.hide();
+                imageSlider.addOnPageChangeListener(InfoActivity.this);
                 imageSlider.startAutoCycle();
+                progressDialog.hide();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -289,7 +286,7 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
 
     @Override
     public void onPageSelected(int position) {
-        Log.e("Slider Demo", "Page Changed: " + position);
+        Log.e("Slider CityHunter", "Page Changed: " + position);
     }
 
     @Override
@@ -298,13 +295,11 @@ public class ActivityInfo extends Activity implements View.OnClickListener, Base
 
     @Override
     protected void onStop() {
-        // To prevent a memory leak on rotation, make sure to call stopAutoCycle() on the slider
-        // before activity or fragment is destroyed
         imageSlider.stopAutoCycle();
         super.onStop();
     }
 
-    boolean isNetworkConnected(){
+    private boolean isNetworkConnected(){
         ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo()!=null;
     }

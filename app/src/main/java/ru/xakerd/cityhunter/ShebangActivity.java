@@ -2,20 +2,15 @@ package ru.xakerd.cityhunter;
 
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AppCompatActivity;
-
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -43,23 +38,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 
-/**
- * Created by User on 31.05.2016.
- */
 
-public class ActivityShebang extends Activity implements View.OnClickListener {
-    static String category_id,category_name;
-    ListView lv;
-    private ArrayList<HashMap<String, Object>> myshebang;
-    private static final String title = "mytitle",
-            description = "mydescription",
-            address = "myaddress", image = "myimage", is_rec = "is_rec", idpost = "id";
+public class ShebangActivity extends Activity implements View.OnClickListener {
+    private String categoryId;
+    private ArrayList<HashMap<String, Object>> shebang;
+    private final String title = "title",
+            description = "description",
+            address = "address", image = "image", is_rec = "is_rec", id = "id";
     private HashMap<String, Object> hm;
-    MyAdapter adapter;
-    ProgressDialog progressDialog;
+    private MyAdapter adapter;
+    private ProgressDialog progressDialog;
 
 
 
@@ -67,26 +57,34 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shebang);
+        Bundle extras = getIntent().getExtras();
+        String categoryName;
+
+        categoryId = extras.getString("category_id");
+        categoryName = extras.getString("category_name");
+
+
         ImageButton imageButton =(ImageButton) findViewById(R.id.btnBack);
         imageButton.setOnClickListener(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (!categoryId.isEmpty()){
         TextView toolbar_title = (TextView)toolbar.findViewById(R.id.toolbar_title);
+        toolbar_title.setText(categoryName);}
+        else
+        toolbar.setVisibility(View.GONE);
 
         progressDialog = new ProgressDialog(this, R.style.MyTheme);
         progressDialog.setCancelable(true);
         progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
         progressDialog.show();
+        ListView listShebang;
+        listShebang = (ListView) findViewById(R.id.lv);
 
-        lv = (ListView) findViewById(R.id.lv);
-        Bundle extras = getIntent().getExtras();
-        category_id = extras.getString(category_id);
-        category_name = extras.getString("category_name");
 
-        toolbar_title.setText(category_name);
-        myshebang = new ArrayList<HashMap<String, Object>>();
-        hm = new HashMap<String, Object>();
-        adapter = new MyAdapter(this, myshebang, R.layout.list_shebang,
+        shebang = new ArrayList<>();
+        hm = new HashMap<>();
+        adapter = new MyAdapter(this, shebang, R.layout.list_shebang,
                 new String[]{
                         title,
                         address,
@@ -103,24 +101,22 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
 
                 });
         View v = getLayoutInflater().inflate(R.layout.item_listviw_footer, null);
-        lv.addFooterView(v,null,false);
-        lv.addHeaderView(v,null,false);
-        lv.setAdapter(adapter);
+        listShebang.addFooterView(v,null,false);
+        listShebang.addHeaderView(v,null,false);
+        listShebang.setAdapter(adapter);
 
         if (isNetworkConnected())
             new ParseTask().execute();
         else
         { progressDialog.hide();
-            Toast.makeText(this,"Подключитесь к сети",Toast.LENGTH_SHORT).show();}
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            Toast.makeText(this,getResources().getString(R.string.is_connected),Toast.LENGTH_SHORT).show();}
+        listShebang.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(ActivityShebang.this, ActivityInfo.class);
-                HashMap hashMap = myshebang.get(position-1);
-                intent.putExtra(ActivityInfo.post_id, hashMap.get(idpost).toString());
-
-
+                Intent intent = new Intent(ShebangActivity.this, InfoActivity.class);
+                HashMap hashMap = shebang.get(position-1);
+                intent.putExtra("id", hashMap.get(ShebangActivity.this.id).toString());
                 intent.putExtra("title",hashMap.get(title).toString());
                 startActivity(intent);
             }
@@ -143,23 +139,28 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
         protected String doInBackground(Void... params) {
             // получаем данные с внешнего ресурса
             try {
-                URL url = new URL("http://api.cityhunter.kz/posts?category_id=" + category_id + "[&type=new]");
+
+                URL url;
+                if (!categoryId.isEmpty())
+                    url = new URL(getResources().getString(R.string.url_shebang) + categoryId);
+                else
+                    url = new URL(getResources().getString(R.string.url_new_shebang));
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
 
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder builder = new StringBuilder();
 
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
+                    builder.append(line);
                 }
 
-                resultJson = buffer.toString();
+                resultJson = builder.toString();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -172,7 +173,7 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
             // выводим целиком полученную json-строку
 
 
-            JSONArray dataJsonObj = null;
+            JSONArray dataJsonObj;
 
 
             try {
@@ -180,24 +181,24 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
 
 
                 for (int i = 0; i < dataJsonObj.length(); i++) {
-                    JSONObject shebang = dataJsonObj.getJSONObject(i);
-                    String post_id = shebang.getString("id");
-                    String post_title = Html.fromHtml(shebang.getString("title")).toString();
-                    String post_is_rec = shebang.getString("is_rec");
-                    String post_thumb = shebang.getString("thumb");
-                    String post_description = Html.fromHtml(shebang.getString("short_description")).toString();
-                    String post_address = shebang.getString("address");
-                    hm = new HashMap<String, Object>();
+                    JSONObject objShebang = dataJsonObj.getJSONObject(i);
+                    String post_id = objShebang.getString("id");
+                    String post_title = Html.fromHtml(objShebang.getString("title")).toString();
+                    String post_is_rec = objShebang.getString("is_rec");
+                    String post_thumb = objShebang.getString("thumb");
+                    String post_description = Html.fromHtml(objShebang.getString("short_description")).toString();
+                    String post_address = objShebang.getString("address");
+                    hm = new HashMap<>();
                     hm.put(title, post_title);
                     hm.put(address, post_address);
                     hm.put(description, post_description);
                     hm.put(image, post_thumb);
                     hm.put(is_rec,post_is_rec);
-                    hm.put(idpost,post_id);
+                    hm.put(id,post_id);
                     if (Boolean.valueOf(post_is_rec))
-                    myshebang.add(0,hm);
+                    ShebangActivity.this.shebang.add(0,hm);
                     else
-                        myshebang.add(hm);
+                        ShebangActivity.this.shebang.add(hm);
 
 
 
@@ -213,7 +214,7 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
         }
     }
 
-    class MyAdapter extends SimpleAdapter {
+    private class MyAdapter extends SimpleAdapter {
 
         private ArrayList<HashMap<String, Object>> results;
         private Context context;
@@ -234,43 +235,41 @@ public class ActivityShebang extends Activity implements View.OnClickListener {
                 v = vi.inflate(R.layout.list_shebang, null);
             }
             TextView text1 = (TextView) v.findViewById(R.id.textTitle);
-            text1.setText(results.get(position).get("mytitle").toString());
+            text1.setText(results.get(position).get("title").toString());
 
 
             TextView text2 = (TextView) v.findViewById(R.id.textDesk);
-            text2.setText(results.get(position).get("mydescription").toString());
-            if (TextUtils.isEmpty(results.get(position).get("mydescription").toString()))
+            text2.setText(results.get(position).get("description").toString());
+            if (TextUtils.isEmpty(results.get(position).get("description").toString()))
                 text2.setVisibility(View.GONE);
             else
                 text2.setVisibility(View.VISIBLE);
 
             TextView text3 = (TextView) v.findViewById(R.id.textAdres);
-            text3.setText(results.get(position).get("myaddress").toString());
-            if (results.get(position).get("myaddress").toString() == "null")
+            text3.setText(results.get(position).get("address").toString());
+            if (results.get(position).get("address").toString().equals("null"))
                 text3.setVisibility(View.GONE);
             else
                 text3.setVisibility(View.VISIBLE);
 
-            ImageView image_is_rec = (ImageView) v.findViewById(R.id.imageRec);
+            ImageView imageIsRec = (ImageView) v.findViewById(R.id.imageRec);
             if (Boolean.valueOf(results.get(position).get("is_rec").toString()))
-            {image_is_rec.setImageResource(R.drawable.recommend);
-            image_is_rec.setBackgroundColor(Color.parseColor("#d5f9f518"));
-            image_is_rec.setVisibility(View.VISIBLE);}
+            {imageIsRec.setImageResource(R.drawable.recommend);
+            imageIsRec.setBackgroundColor(ContextCompat.getColor(context, R.color.colorSunset));
+            imageIsRec.setVisibility(View.VISIBLE);}
             else
-            image_is_rec.setVisibility(View.GONE);
+            imageIsRec.setVisibility(View.GONE);
 
-            ImageView image = (ImageView) v.findViewById(R.id.imageView);
-            //"cityhunter.kz/uploads/images/1441439294.jpg",
-            //Picasso.with(context).load(results.get(position).get("myimage").toString()).error(R.mipmap.ic_launcher).into(image);
+            ImageView imageThumb = (ImageView) v.findViewById(R.id.imageView);
             Picasso.with(context)
                     .load("http://" + results.get(position)
-                            .get("myimage").toString())
-                    .into(image);
+                            .get("image").toString())
+                    .into(imageThumb);
             return v;
         }
     }
 
-    boolean isNetworkConnected(){
+    private boolean isNetworkConnected(){
         ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo()!=null;
     }

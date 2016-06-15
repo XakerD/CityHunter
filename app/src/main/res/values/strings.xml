@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">City Hunter</string>
+    <string name="url_category">http://api.cityhunter.kz/menu</string>
+    <string name="is_connected">Подключитесь к сети</string>
+    <string name="url_shebang">http://api.cityhunter.kz/posts?category_id=</string>
+    <string name="url_new_shebang">http://api.cityhunter.kz/posts?type=new</string>
+    <string name="url_info">http://api.cityhunter.kz/posts/</string>
 </resources>
