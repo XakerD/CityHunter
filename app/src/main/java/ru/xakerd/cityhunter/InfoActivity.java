@@ -21,7 +21,6 @@ import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,10 +60,7 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
-        ImageButton imageButton =(ImageButton) findViewById(R.id.toolbar_btnBack);
-        imageButton.setOnClickListener(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.info_toolbar);
-        TextView toolbar_title = (TextView)findViewById(R.id.toolbar_title);
+
         progressDialog = new ProgressDialog(this, R.style.MyTheme);
         progressDialog.setCancelable(true);
         progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
@@ -86,8 +82,18 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
         postId = extras.getString(EXTRA_ID);
         String postTitle = extras.getString(EXTRA_TITLE);
 
-        toolbar_title.setText(postTitle);
-        infoLayout = (LinearLayout) findViewById(R.id.linLayout);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.info_toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_action_arrow_left);
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.colorWhite));
+        toolbar.setTitle(postTitle);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                InfoActivity.super.onBackPressed();
+            }
+        });
+
+        infoLayout = (LinearLayout) findViewById(R.id.infoLayout);
         if (isNetworkConnected())
         new ParseTask().execute();
         else
@@ -105,9 +111,6 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.toolbar_btnBack:
-                super.onBackPressed();
-                break;
             case R.id.info_btnLocation:
                 if (!TextUtils.isEmpty(latitude)) {
                     Intent mapIntent = new Intent(InfoActivity.this, MapsActivity.class);
@@ -139,14 +142,15 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
         }
     }
 
-    private class ParseTask extends AsyncTask<Void, Void, String> {
+    private class ParseTask extends AsyncTask<Void, Void, Void> {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String resultJson = "";
-
+        String postDescription;
+        String[] caption,value,urlImages;
         @Override
-        protected String doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
             // получаем данные с внешнего ресурса
             try {
                 URL url = new URL(getResources().getString(R.string.url_info) + postId);
@@ -166,26 +170,14 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
                 }
 
                 resultJson = builder.toString();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return resultJson;
-        }
 
-        @Override
-        protected void onPostExecute(String strJson) {
-            super.onPostExecute(strJson);
-            // выводим целиком полученную json-строку
-            JSONObject dataJsonObj;
-            try {
-                dataJsonObj = new JSONObject(strJson);
+                //обработка json
+                JSONObject dataJsonObj;
+                dataJsonObj = new JSONObject(resultJson);
 
                 title = dataJsonObj.getString("title");
 
-                String postDescription = Html.fromHtml(dataJsonObj.getString("description")).toString();
-                description.setText(postDescription);
-                if (!TextUtils.isEmpty(postDescription))
-                    description.setVisibility(View.VISIBLE);
+                postDescription = Html.fromHtml(dataJsonObj.getString("description")).toString();
 
                 try {
                     JSONObject coordinates = dataJsonObj.getJSONObject("coordinates");
@@ -195,28 +187,49 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
                     e1.printStackTrace();
                 }
 
-                JSONArray info = new JSONArray(dataJsonObj.getString("info"));
-
-                for (int i=0;i<info.length();i++){
+                JSONArray info;
+                info = new JSONArray(dataJsonObj.getString("info"));
+                caption = new String[info.length()];
+                value = new String[info.length()];
+                for (int i=0;i<info.length();i++) {
                     JSONObject objectInfo = info.getJSONObject(i);
-                    String caption = objectInfo.getString("caption");
+                    caption[i] = objectInfo.getString("caption");
+                    value[i] = objectInfo.getString("value");
+                }
 
-                    switch (caption){
+                JSONArray images = dataJsonObj.getJSONArray("images");
+                urlImages = new String[images.length()];
+                for (int i=0; i<urlImages.length;i++)
+                urlImages[i]="http://" + images.get(i);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+                if (!TextUtils.isEmpty(postDescription)){
+                    description.setText(postDescription);
+                    description.setVisibility(View.VISIBLE);
+                }
+
+                for (int i=0;i<caption.length;i++){
+                    switch (caption[i]){
                         case "Адрес":
-                            String address;
-                            address = objectInfo.getString("value");
-                            btnLocation.setText(address);
+                            btnLocation.setText(value[i]);
                             btnLocation.setVisibility(View.VISIBLE);
                             break;
 
                         case "Время работы":
-                            String timeInfo = objectInfo.getString("value");
-                            btnTimeInfo.setText(timeInfo);
+                            btnTimeInfo.setText(value[i]);
                             btnTimeInfo.setVisibility(View.VISIBLE);
                             break;
 
                         case "Телефон":
-                            String valuePhone[] = objectInfo.getString("value").split(";");
+                            String valuePhone[] = value[i].split(";");
 
                             final float scale = getResources().getDisplayMetrics().density;
                             LinearLayout.LayoutParams centerGravityParams = new LinearLayout.LayoutParams(
@@ -236,7 +249,7 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
                             break;
 
                         case "Цены":
-                            priceValue = objectInfo.getString("value");
+                            priceValue = value[i];
                             btnPrice.setVisibility(View.VISIBLE);
                             break;
 
@@ -244,11 +257,11 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
 
                 }
 
-                JSONArray images = dataJsonObj.getJSONArray("images");
+
                 HashMap<String, String> image_maps = new HashMap<>();
-                for (int i = 0; i < images.length(); i++) {
+                for (int i = 0; i < urlImages.length; i++) {
                     image_maps.put("image" + Integer.toString(i),
-                            "http://" + images.get(i));
+                            urlImages[i]);
                 }
                 for (String name : image_maps.keySet()) {
                     DefaultSliderView defaultSliderView = new DefaultSliderView(getApplicationContext());
@@ -265,9 +278,7 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
                 imageSlider.addOnPageChangeListener(InfoActivity.this);
                 imageSlider.startAutoCycle();
                 progressDialog.hide();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+
         }
 
 

@@ -18,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -28,7 +27,6 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -41,7 +39,7 @@ import java.util.HashMap;
 
 
 
-public class ShebangActivity extends Activity implements View.OnClickListener {
+public class ShebangActivity extends Activity {
     static final String EXTRA_CATEGORY_ID ="category_id",
                         EXTRA_CATEGORY_NAME ="category_name";
     private String categoryId;
@@ -65,16 +63,23 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
         categoryId = extras.getString(EXTRA_CATEGORY_ID);
         categoryName = extras.getString(EXTRA_CATEGORY_NAME);
 
-
-        ImageButton imageButton =(ImageButton) findViewById(R.id.toolbar_btnBack);
-        imageButton.setOnClickListener(this);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.shebang_toolbar);
         if (!categoryId.isEmpty()){
-        TextView toolbar_title = (TextView)toolbar.findViewById(R.id.toolbar_title);
-        toolbar_title.setText(categoryName);}
+            toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.colorWhite));
+            toolbar.setTitle(categoryName);
+            toolbar.setNavigationIcon(R.drawable.ic_action_arrow_left);
+        }
         else
         toolbar.setVisibility(View.GONE);
+
+
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShebangActivity.super.onBackPressed();
+            }
+        });
 
         progressDialog = new ProgressDialog(this, R.style.MyTheme);
         progressDialog.setCancelable(true);
@@ -125,22 +130,16 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
         });
     }
 
-    @Override
-    public void onClick(View v) {
-        super.onBackPressed();
-    }
-
-
-    private class ParseTask extends AsyncTask<Void, Void, String> {
+    private class ParseTask extends AsyncTask<Void, Void, Void> {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-        String resultJson = "";
 
         @Override
-        protected String doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
             // получаем данные с внешнего ресурса
             try {
+                String resultJson;
 
                 URL url;
                 if (!categoryId.isEmpty())
@@ -163,23 +162,9 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
                 }
 
                 resultJson = builder.toString();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return resultJson;
-        }
-
-        @Override
-        protected void onPostExecute(String strJson) {
-            super.onPostExecute(strJson);
-            // выводим целиком полученную json-строку
-
-
-            JSONArray dataJsonObj;
-
-
-            try {
-                dataJsonObj = new JSONArray(strJson);
+                //обработка json
+                JSONArray dataJsonObj;
+                dataJsonObj = new JSONArray(resultJson);
 
 
                 for (int i = 0; i < dataJsonObj.length(); i++) {
@@ -198,21 +183,24 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
                     hm.put(is_rec,post_is_rec);
                     hm.put(id,post_id);
                     if (Boolean.valueOf(post_is_rec))
-                    ShebangActivity.this.shebang.add(0,hm);
+                        ShebangActivity.this.shebang.add(0,hm);
                     else
                         ShebangActivity.this.shebang.add(hm);
 
 
 
                 }
-
-                adapter.notifyDataSetChanged();
-                progressDialog.hide();
-
-
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+                adapter.notifyDataSetChanged();
+                progressDialog.hide();
         }
     }
 

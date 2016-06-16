@@ -8,7 +8,6 @@ import android.app.*;
 import android.os.AsyncTask;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -66,14 +65,14 @@ public class CategoryActivity extends Activity {
         });
     }
 
-    private class ParseTask extends AsyncTask<Void, Void, String> {
+    private class ParseTask extends AsyncTask<Void, Void, Void> {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-        String resultJson = "";
 
         @Override
-        protected String doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
+            String resultJson;
             // получаем данные с внешнего ресурса
             try {
                 URL url = new URL(getResources().getString(R.string.url_category));
@@ -93,22 +92,9 @@ public class CategoryActivity extends Activity {
                 }
 
                 resultJson = builder.toString();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return resultJson;
-        }
-
-        @Override
-        protected void onPostExecute(String strJson) {
-            super.onPostExecute(strJson);
-            // выводим целиком полученную json-строку
-            JSONArray dataJsonObj;
-
-
-            try {
-                dataJsonObj = new JSONArray(strJson);
-
+                //обработка json
+                JSONArray dataJsonObj;
+                dataJsonObj = new JSONArray(resultJson);
 
                 for (int i = 0; i < dataJsonObj.length(); i++) {
                     JSONObject category = dataJsonObj.getJSONObject(i);
@@ -118,14 +104,18 @@ public class CategoryActivity extends Activity {
                     categoryName.add(name.toUpperCase());
 
                 }
-                adapter.notifyDataSetChanged();
-
-                progressDialog.hide();
-
-
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+                adapter.notifyDataSetChanged();
+                progressDialog.hide();
         }
     }
     private boolean isNetworkConnected(){
