@@ -5,4 +5,8 @@
     <color name="colorAccent">#FF4081</color>
     <color name="transparent">#00000000</color>
     <color name="colorSunset">#d5f9f518</color>
+    <color name="colorGray">#f3d6d6d6</color>
+    <color name="colorWhite">#FFF</color>
+    <color name="colorBlack">#000</color>
+    <color name="colorBlueDark">#029acc</color>
 </resources>

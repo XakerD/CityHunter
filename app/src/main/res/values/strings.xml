@@ -5,4 +5,5 @@
     <string name="url_shebang">http://api.cityhunter.kz/posts?category_id=</string>
     <string name="url_new_shebang">http://api.cityhunter.kz/posts?type=new</string>
     <string name="url_info">http://api.cityhunter.kz/posts/</string>
+    <string name="info_price">ЦЕНЫ</string>
 </resources>

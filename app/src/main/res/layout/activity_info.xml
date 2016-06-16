@@ -5,59 +5,42 @@
     android:orientation="vertical">
 
     <include
-        android:id="@+id/toolbar"
-        layout="@layout/toolbar" />
+        android:id="@+id/info_toolbar"
+        layout="@layout/main_toolbar" />
 
     <ScrollView
-        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
-        android:fillViewport="false"
-        android:focusable="false"
-        android:longClickable="false"
-        android:measureAllChildren="false"
-        android:nestedScrollingEnabled="false"
-        android:scrollbars="none"
-        android:touchscreenBlocksFocus="false"
-        android:transitionGroup="false">
+        android:scrollbars="none">
 
         <LinearLayout xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/linLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             tools:context=".InfoActivity">
 
-
-
-                <com.daimajia.slider.library.SliderLayout
-                    android:id="@+id/slider"
-                    android:layout_width="match_parent"
-
-                    android:layout_height="280dp"
-                    android:paddingBottom="15dp" />
-
-
+            <com.daimajia.slider.library.SliderLayout
+                android:id="@+id/info_slider"
+                android:layout_width="match_parent"
+                android:layout_height="280dp"
+                android:paddingBottom="15dp" />
 
             <TextView
-                android:id="@+id/btnlocation"
+                android:id="@+id/info_btnLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dp"
-                android:clickable="false"
                 android:drawableLeft="@drawable/ic_action_location"
-                android:focusable="false"
                 android:gravity="left|center"
-                android:longClickable="false"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:singleLine="false"
-                android:textColor="#029acc"
+                android:textColor="@color/colorBlueDark"
                 android:visibility="invisible" />
 
             <TextView
-                android:id="@+id/textTime"
+                android:id="@+id/info_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dp"
@@ -65,11 +48,11 @@
                 android:gravity="left|center"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:textColor="#0d9ece"
+                android:textColor="@color/colorBlueDark"
                 android:visibility="gone" />
 
             <TextView
-                android:id="@+id/btnprice"
+                android:id="@+id/info_btnPrice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dp"
@@ -77,19 +60,19 @@
                 android:gravity="left|center"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:text="ЦЕНЫ"
-                android:textColor="#029acc"
+                android:text="@string/info_price"
+                android:textColor="@color/colorBlueDark"
                 android:visibility="gone" />
 
             <TextView
-                android:id="@+id/description"
+                android:id="@+id/info_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
+                android:paddingBottom="15dp"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
-                android:paddingBottom="15dp"
-                android:textColor="#000000" />
+                android:textColor="@color/colorBlack"
+                android:visibility="gone" />
 
 
         </LinearLayout>

@@ -42,6 +42,8 @@ import java.util.HashMap;
 
 
 public class ShebangActivity extends Activity implements View.OnClickListener {
+    static final String EXTRA_CATEGORY_ID ="category_id",
+                        EXTRA_CATEGORY_NAME ="category_name";
     private String categoryId;
     private ArrayList<HashMap<String, Object>> shebang;
     private final String title = "title",
@@ -56,18 +58,18 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.shebang);
+        setContentView(R.layout.activity_shebang);
         Bundle extras = getIntent().getExtras();
         String categoryName;
 
-        categoryId = extras.getString("category_id");
-        categoryName = extras.getString("category_name");
+        categoryId = extras.getString(EXTRA_CATEGORY_ID);
+        categoryName = extras.getString(EXTRA_CATEGORY_NAME);
 
 
-        ImageButton imageButton =(ImageButton) findViewById(R.id.btnBack);
+        ImageButton imageButton =(ImageButton) findViewById(R.id.toolbar_btnBack);
         imageButton.setOnClickListener(this);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.shebang_toolbar);
         if (!categoryId.isEmpty()){
         TextView toolbar_title = (TextView)toolbar.findViewById(R.id.toolbar_title);
         toolbar_title.setText(categoryName);}
@@ -79,12 +81,12 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
         progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
         progressDialog.show();
         ListView listShebang;
-        listShebang = (ListView) findViewById(R.id.lv);
+        listShebang = (ListView) findViewById(R.id.shebang_listView);
 
 
         shebang = new ArrayList<>();
         hm = new HashMap<>();
-        adapter = new MyAdapter(this, shebang, R.layout.list_shebang,
+        adapter = new MyAdapter(this, shebang, R.layout.shebang_list_item,
                 new String[]{
                         title,
                         address,
@@ -93,14 +95,14 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
                         is_rec
                 },
                 new int[]{
-                        R.id.textTitle,
-                        R.id.textAdres,
-                        R.id.textDesk,
-                        R.id.imageView,
-                        R.id.imageRec
+                        R.id.shebang_title,
+                        R.id.shebang_address,
+                        R.id.shebang_description,
+                        R.id.shebang_image,
+                        R.id.shebang_is_rec
 
                 });
-        View v = getLayoutInflater().inflate(R.layout.item_listviw_footer, null);
+        View v = getLayoutInflater().inflate(R.layout.item_listview_footer, null);
         listShebang.addFooterView(v,null,false);
         listShebang.addHeaderView(v,null,false);
         listShebang.setAdapter(adapter);
@@ -116,8 +118,8 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ShebangActivity.this, InfoActivity.class);
                 HashMap hashMap = shebang.get(position-1);
-                intent.putExtra("id", hashMap.get(ShebangActivity.this.id).toString());
-                intent.putExtra("title",hashMap.get(title).toString());
+                intent.putExtra(InfoActivity.EXTRA_ID, hashMap.get(ShebangActivity.this.id).toString());
+                intent.putExtra(InfoActivity.EXTRA_TITLE,hashMap.get(title).toString());
                 startActivity(intent);
             }
         });
@@ -232,27 +234,27 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
             if (v == null) {
                 LayoutInflater vi = (LayoutInflater) context
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.list_shebang, null);
+                v = vi.inflate(R.layout.shebang_list_item, null);
             }
-            TextView text1 = (TextView) v.findViewById(R.id.textTitle);
+            TextView text1 = (TextView) v.findViewById(R.id.shebang_title);
             text1.setText(results.get(position).get("title").toString());
 
 
-            TextView text2 = (TextView) v.findViewById(R.id.textDesk);
+            TextView text2 = (TextView) v.findViewById(R.id.shebang_description);
             text2.setText(results.get(position).get("description").toString());
             if (TextUtils.isEmpty(results.get(position).get("description").toString()))
                 text2.setVisibility(View.GONE);
             else
                 text2.setVisibility(View.VISIBLE);
 
-            TextView text3 = (TextView) v.findViewById(R.id.textAdres);
+            TextView text3 = (TextView) v.findViewById(R.id.shebang_address);
             text3.setText(results.get(position).get("address").toString());
             if (results.get(position).get("address").toString().equals("null"))
                 text3.setVisibility(View.GONE);
             else
                 text3.setVisibility(View.VISIBLE);
 
-            ImageView imageIsRec = (ImageView) v.findViewById(R.id.imageRec);
+            ImageView imageIsRec = (ImageView) v.findViewById(R.id.shebang_is_rec);
             if (Boolean.valueOf(results.get(position).get("is_rec").toString()))
             {imageIsRec.setImageResource(R.drawable.recommend);
             imageIsRec.setBackgroundColor(ContextCompat.getColor(context, R.color.colorSunset));
@@ -260,7 +262,7 @@ public class ShebangActivity extends Activity implements View.OnClickListener {
             else
             imageIsRec.setVisibility(View.GONE);
 
-            ImageView imageThumb = (ImageView) v.findViewById(R.id.imageView);
+            ImageView imageThumb = (ImageView) v.findViewById(R.id.shebang_image);
             Picasso.with(context)
                     .load("http://" + results.get(position)
                             .get("image").toString())

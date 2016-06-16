@@ -1,16 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".CategoryActivity">
+    android:theme="@style/AppTheme">
 
-    <ListView
-        android:scrollbars="none"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listcategory"
-        android:layout_gravity="center_horizontal"
-        android:scrollIndicators="none" />
+<TabHost
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@android:id/tabhost">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:clickable="false">
+
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:tabStripEnabled="false"
+            android:measureWithLargestChild="false"
+            android:baselineAligned="false"
+            android:background="@color/colorPrimary">
+        </TabWidget>
+
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_height="fill_parent"
+            android:layout_width="fill_parent">
+        </FrameLayout>
+
+    </LinearLayout>
+
+</TabHost>
 </LinearLayout>

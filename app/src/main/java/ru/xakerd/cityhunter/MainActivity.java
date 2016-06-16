@@ -16,7 +16,7 @@ public class MainActivity extends TabActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.newz);
+        setContentView(R.layout.activity_main);
 
         // create the TabHost that will contain the Tabs
         TabHost tabHost = (TabHost)findViewById(android.R.id.tabhost);
@@ -33,8 +33,8 @@ public class MainActivity extends TabActivity
 
         tab2.setIndicator("Новое");
         Intent intent = new Intent(this,ShebangActivity.class);
-        intent.putExtra("category_id","");
-        intent.putExtra("category_name","");
+        intent.putExtra(ShebangActivity.EXTRA_CATEGORY_ID,"");
+        intent.putExtra(ShebangActivity.EXTRA_CATEGORY_NAME,"");
         tab2.setContent(intent);
 
 
@@ -54,9 +54,6 @@ public class MainActivity extends TabActivity
             TextView tv = (TextView) tabhost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
             tv.setTextColor(Color.parseColor("#ffffff"));
         }
-        // Возобновите все приостановленные обновления UI,
-        // потоки или процессы, которые были "заморожены",
-        // когда данный объект был неактивным.
     }
 
 }

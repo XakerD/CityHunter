@@ -47,7 +47,8 @@ import java.util.HashMap;
 
 public class InfoActivity extends Activity implements View.OnClickListener, BaseSliderView.OnSliderClickListener,
         ViewPagerEx.OnPageChangeListener {
-
+   static final String EXTRA_ID="id",
+                       EXTRA_TITLE="title";
     private String latitude, longitude, title, priceValue;
     private SliderLayout imageSlider;
     private String postId;
@@ -59,31 +60,31 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.info);
-        ImageButton imageButton =(ImageButton) findViewById(R.id.btnBack);
+        setContentView(R.layout.activity_info);
+        ImageButton imageButton =(ImageButton) findViewById(R.id.toolbar_btnBack);
         imageButton.setOnClickListener(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.info_toolbar);
         TextView toolbar_title = (TextView)findViewById(R.id.toolbar_title);
         progressDialog = new ProgressDialog(this, R.style.MyTheme);
         progressDialog.setCancelable(true);
         progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
         progressDialog.show();
 
-        imageSlider = (SliderLayout) findViewById(R.id.slider);
+        imageSlider = (SliderLayout) findViewById(R.id.info_slider);
         imageSlider.stopAutoCycle();
 
-        btnLocation = (TextView) findViewById(R.id.btnlocation);
+        btnLocation = (TextView) findViewById(R.id.info_btnLocation);
         btnLocation.setOnClickListener(this);
 
-        btnPrice = (TextView) findViewById(R.id.btnprice);
+        btnPrice = (TextView) findViewById(R.id.info_btnPrice);
         btnPrice.setOnClickListener(this);
 
-        description = (TextView) findViewById(R.id.description);
-        btnTimeInfo = (TextView) findViewById(R.id.textTime);
+        description = (TextView) findViewById(R.id.info_description);
+        btnTimeInfo = (TextView) findViewById(R.id.info_time);
 
         Bundle extras = getIntent().getExtras();
-        postId = extras.getString("id");
-        String postTitle = extras.getString("title");
+        postId = extras.getString(EXTRA_ID);
+        String postTitle = extras.getString(EXTRA_TITLE);
 
         toolbar_title.setText(postTitle);
         infoLayout = (LinearLayout) findViewById(R.id.linLayout);
@@ -99,27 +100,24 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
     public void onResume(){
         super.onResume();
         imageSlider.startAutoCycle();
-        // Возобновите все приостановленные обновления UI,
-        // потоки или процессы, которые были "заморожены",
-        // когда данный объект был неактивным.
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btnBack:
+            case R.id.toolbar_btnBack:
                 super.onBackPressed();
                 break;
-            case R.id.btnlocation:
+            case R.id.info_btnLocation:
                 if (!TextUtils.isEmpty(latitude)) {
                     Intent mapIntent = new Intent(InfoActivity.this, MapsActivity.class);
-                    mapIntent.putExtra("latitude", latitude);
-                    mapIntent.putExtra("longitude", longitude);
-                    mapIntent.putExtra("title", title);
+                    mapIntent.putExtra(MapsActivity.EXTRA_LATITUDE, latitude);
+                    mapIntent.putExtra(MapsActivity.EXTRA_LONGITUDE, longitude);
+                    mapIntent.putExtra(EXTRA_TITLE, title);
                     startActivity(mapIntent);
                 }
                 break;
-            case R.id.btnprice:
+            case R.id.info_btnPrice:
                 AlertDialog.Builder builder = new AlertDialog.Builder(InfoActivity.this);
                 builder
                         .setMessage(priceValue)
@@ -222,7 +220,7 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
 
                             final float scale = getResources().getDisplayMetrics().density;
                             LinearLayout.LayoutParams centerGravityParams = new LinearLayout.LayoutParams(
-                                    (int) (250 * scale + 0.5f), LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                             centerGravityParams.gravity = Gravity.CENTER;
                             centerGravityParams.setMargins(0, 0, 0, (int) (10 * scale + 0.5f));
 

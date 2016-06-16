@@ -32,7 +32,7 @@ public class CategoryActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_category);
 
         ListView categoryList;
 
@@ -41,7 +41,7 @@ public class CategoryActivity extends Activity {
         progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
         progressDialog.show();
 
-        categoryList = (ListView) findViewById(R.id.listcategory);
+        categoryList = (ListView) findViewById(R.id.category_listView);
 
         adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, categoryName);
@@ -59,8 +59,8 @@ public class CategoryActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(CategoryActivity.this, ShebangActivity.class);
-                intent.putExtra("category_id", categoryId.get(position));
-                intent.putExtra("category_name", categoryName.get(position));
+                intent.putExtra(ShebangActivity.EXTRA_CATEGORY_ID, categoryId.get(position));
+                intent.putExtra(ShebangActivity.EXTRA_CATEGORY_NAME, categoryName.get(position));
                 startActivity(intent);
             }
         });

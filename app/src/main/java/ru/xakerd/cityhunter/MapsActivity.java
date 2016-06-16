@@ -3,7 +3,6 @@ package ru.xakerd.cityhunter;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.widget.Toast;
@@ -11,28 +10,24 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-/**
- * Created by User on 03.06.2016.
- */
 public class MapsActivity extends Activity {
-    static String title;
-
-    LatLng latLng;
-    GoogleMap googleMap;
+    private String title;
+    static final String EXTRA_LATITUDE="latitude",EXTRA_LONGITUDE="longitude";
+    private LatLng latLng;
+    private GoogleMap googleMap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.maps);
+        setContentView(R.layout.activity_maps);
         Bundle extras = getIntent().getExtras();
-        double dlatitude = Double.parseDouble(extras.getString("latitude"));
-        double dlongitude = Double.parseDouble(extras.getString("longitude"));
-        latLng = new LatLng(dlatitude,dlongitude);
-        title = Html.fromHtml(extras.getString("title")).toString();
+        double latitude = Double.parseDouble(extras.getString(EXTRA_LATITUDE));
+        double longitude = Double.parseDouble(extras.getString(EXTRA_LONGITUDE));
+        title = Html.fromHtml(extras.getString(InfoActivity.EXTRA_TITLE)).toString();
+        latLng = new LatLng(latitude,longitude);
         createMapView();
         addMarker();
     }

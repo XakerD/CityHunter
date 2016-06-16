@@ -9,15 +9,11 @@
     </style>
 
     <style name="myStyle">
-       <item name="android:textColor">#FFFFFF</item>
+       <item name="android:textColor">@color/colorWhite</item>
         <item name="android:textSize">20sp</item>
         <item name="android:drawableStart">@drawable/ic_action_phone</item>
-        <item name="android:shadowColor">#A8A8A8</item>
-        <item name="android:shadowDx">0</item>
-        <item name="android:shadowDy">0</item>
-        <item name="android:shadowRadius">5</item>
-        <item name="android:background">#4b5cb9</item>
-        
+        <item name="android:paddingLeft">50dp</item>
+        <item name="android:paddingRight">50dp</item>
     </style>
 
     <style name="CustomAlertDialogStyle">
@@ -36,9 +32,9 @@
     <style name="MyTheme" parent="android:Theme.Holo.Dialog">
         <item name="android:alertDialogStyle">@style/CustomAlertDialogStyle</item>
         <item name="android:windowBackground">@color/transparent</item>
-        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorPrimary">@color/colorWhite</item>
         <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">@color/colorWhite</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textSize">12sp</item>
     </style>
