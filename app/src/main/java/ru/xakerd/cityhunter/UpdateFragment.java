@@ -1,18 +1,13 @@
 package ru.xakerd.cityhunter;
 
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -20,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -39,11 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
+public class UpdateFragment extends Fragment {
 
-public class ShebangActivity extends AppCompatActivity {
-    static final String EXTRA_CATEGORY_ID ="category_id",
-                        EXTRA_CATEGORY_NAME ="category_name";
-    private String categoryId;
     private ArrayList<HashMap<String, Object>> shebang;
     private final String title = "title",
             description = "description",
@@ -52,46 +45,22 @@ public class ShebangActivity extends AppCompatActivity {
     private MyAdapter adapter;
     private ProgressDialog progressDialog;
 
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_shebang);
-        Bundle extras = getIntent().getExtras();
-        String categoryName;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_update, container, false);
 
-        categoryId = extras.getString(EXTRA_CATEGORY_ID);
-        categoryName = extras.getString(EXTRA_CATEGORY_NAME);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-
-        }
-        assert toolbar != null;
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-        assert actionBar != null;
-        actionBar.setTitle(categoryName);
-
-        progressDialog = new ProgressDialog(this, R.style.MyTheme);
+        progressDialog = new ProgressDialog(getContext(), R.style.MyTheme);
         progressDialog.setCancelable(true);
         progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
         progressDialog.show();
         ListView listShebang;
-        listShebang = (ListView) findViewById(R.id.shebang_listView);
+        listShebang = (ListView) view.findViewById(R.id.shebang_listView);
 
 
         shebang = new ArrayList<>();
         hm = new HashMap<>();
-        adapter = new MyAdapter(this, shebang, R.layout.shebang_list_item,
+        adapter = new MyAdapter(getContext(), shebang, R.layout.shebang_list_item,
                 new String[]{
                         title,
                         address,
@@ -107,7 +76,8 @@ public class ShebangActivity extends AppCompatActivity {
                         R.id.shebang_is_rec
 
                 });
-        View v = getLayoutInflater().inflate(R.layout.item_listview_footer, null);
+        LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LinearLayout v = (LinearLayout) layoutInflater.inflate(R.layout.item_listview_footer, null);
         listShebang.addFooterView(v,null,false);
         listShebang.addHeaderView(v,null,false);
         listShebang.setAdapter(adapter);
@@ -116,20 +86,21 @@ public class ShebangActivity extends AppCompatActivity {
             new ParseTask().execute();
         else
         { progressDialog.hide();
-            Toast.makeText(this,getResources().getString(R.string.is_connected),Toast.LENGTH_SHORT).show();}
+            Toast.makeText(getContext(),getResources().getString(R.string.is_connected),Toast.LENGTH_SHORT).show();}
         listShebang.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(ShebangActivity.this, InfoActivity.class);
+                Intent intent = new Intent(getActivity(), InfoActivity.class);
                 HashMap hashMap = shebang.get(position-1);
-                intent.putExtra(InfoActivity.EXTRA_ID, hashMap.get(ShebangActivity.this.id).toString());
+                intent.putExtra(InfoActivity.EXTRA_ID, hashMap.get(UpdateFragment.this.id).toString());
                 intent.putExtra(InfoActivity.EXTRA_TITLE,hashMap.get(title).toString());
                 startActivity(intent);
             }
         });
-    }
 
+        return view;
+    }
     private class ParseTask extends AsyncTask<Void, Void, Void> {
 
         HttpURLConnection urlConnection = null;
@@ -142,10 +113,8 @@ public class ShebangActivity extends AppCompatActivity {
                 String resultJson;
 
                 URL url;
-                if (!categoryId.isEmpty())
-                    url = new URL(getResources().getString(R.string.url_shebang) + categoryId);
-                else
-                    url = new URL(getResources().getString(R.string.url_new_shebang));
+
+                url = new URL(getResources().getString(R.string.url_new_shebang));
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -183,9 +152,9 @@ public class ShebangActivity extends AppCompatActivity {
                     hm.put(is_rec,post_is_rec);
                     hm.put(id,post_id);
                     if (Boolean.valueOf(post_is_rec))
-                        ShebangActivity.this.shebang.add(0,hm);
+                        shebang.add(0,hm);
                     else
-                        ShebangActivity.this.shebang.add(hm);
+                        shebang.add(hm);
 
 
 
@@ -199,11 +168,10 @@ public class ShebangActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-                adapter.notifyDataSetChanged();
-                progressDialog.hide();
+            adapter.notifyDataSetChanged();
+            progressDialog.hide();
         }
     }
-
     private class MyAdapter extends SimpleAdapter {
 
         private ArrayList<HashMap<String, Object>> results;
@@ -245,10 +213,10 @@ public class ShebangActivity extends AppCompatActivity {
             ImageView imageIsRec = (ImageView) v.findViewById(R.id.shebang_is_rec);
             if (Boolean.valueOf(results.get(position).get("is_rec").toString()))
             {imageIsRec.setImageResource(R.drawable.recommend);
-            imageIsRec.setBackgroundColor(ContextCompat.getColor(context, R.color.colorSunset));
-            imageIsRec.setVisibility(View.VISIBLE);}
+                imageIsRec.setBackgroundColor(ContextCompat.getColor(context, R.color.colorSunset));
+                imageIsRec.setVisibility(View.VISIBLE);}
             else
-            imageIsRec.setVisibility(View.GONE);
+                imageIsRec.setVisibility(View.GONE);
 
             ImageView imageThumb = (ImageView) v.findViewById(R.id.shebang_image);
             Picasso.with(context)
@@ -260,9 +228,7 @@ public class ShebangActivity extends AppCompatActivity {
     }
 
     private boolean isNetworkConnected(){
-        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo()!=null;
     }
-
-
 }

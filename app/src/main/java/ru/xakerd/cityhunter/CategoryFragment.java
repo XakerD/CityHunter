@@ -16,54 +16,58 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 
 import java.util.*;
 
-public class CategoryActivity extends Activity {
+public class CategoryFragment extends android.support.v4.app.Fragment {
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_category, container, false);
+        ListView categoryList;
+
+        progressDialog = new ProgressDialog(getContext(), R.style.MyTheme);
+        progressDialog.setCancelable(true);
+        progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
+        progressDialog.show();
+
+        categoryList = (ListView) view.findViewById(R.id.category_listView);
+
+        adapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_list_item_1, categoryName);
+
+        categoryList.setAdapter(adapter);
+        if (isNetworkConnected())
+            new ParseTask().execute();
+        else
+        { progressDialog.hide();
+            Toast.makeText(getContext(),getResources().getString(R.string.is_connected),Toast.LENGTH_SHORT).show();}
+
+        categoryList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getContext(), ShebangActivity.class);
+                intent.putExtra(ShebangActivity.EXTRA_CATEGORY_ID, categoryId.get(position));
+                intent.putExtra(ShebangActivity.EXTRA_CATEGORY_NAME, categoryName.get(position));
+                startActivity(intent);
+            }
+        });
+        return view;
+    }
 
     private ArrayAdapter<String> adapter;
     private ArrayList<String> categoryId = new ArrayList<>();
     private final ArrayList<String> categoryName = new ArrayList<>();
     private ProgressDialog progressDialog;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category);
 
-        ListView categoryList;
-
-        progressDialog = new ProgressDialog(this, R.style.MyTheme);
-        progressDialog.setCancelable(true);
-        progressDialog.setProgressStyle(android.R.style.Widget_ProgressBar_Small);
-        progressDialog.show();
-
-        categoryList = (ListView) findViewById(R.id.category_listView);
-
-        adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, categoryName);
-
-        categoryList.setAdapter(adapter);
-
-        if (isNetworkConnected())
-            new ParseTask().execute();
-        else
-        { progressDialog.hide();
-            Toast.makeText(this,getResources().getString(R.string.is_connected),Toast.LENGTH_SHORT).show();}
-
-        categoryList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(CategoryActivity.this, ShebangActivity.class);
-                intent.putExtra(ShebangActivity.EXTRA_CATEGORY_ID, categoryId.get(position));
-                intent.putExtra(ShebangActivity.EXTRA_CATEGORY_NAME, categoryName.get(position));
-                startActivity(intent);
-            }
-        });
-    }
 
     private class ParseTask extends AsyncTask<Void, Void, Void> {
 
@@ -119,7 +123,7 @@ public class CategoryActivity extends Activity {
         }
     }
     private boolean isNetworkConnected(){
-        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo()!=null;
     }
 }

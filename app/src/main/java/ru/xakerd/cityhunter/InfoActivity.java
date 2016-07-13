@@ -1,7 +1,7 @@
 package ru.xakerd.cityhunter;
 
 
-import android.app.Activity;
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,8 +11,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -44,7 +46,7 @@ import java.net.URL;
 import java.util.HashMap;
 
 
-public class InfoActivity extends Activity implements View.OnClickListener, BaseSliderView.OnSliderClickListener,
+public class InfoActivity extends AppCompatActivity implements View.OnClickListener, BaseSliderView.OnSliderClickListener,
         ViewPagerEx.OnPageChangeListener {
    static final String EXTRA_ID="id",
                        EXTRA_TITLE="title";
@@ -82,16 +84,22 @@ public class InfoActivity extends Activity implements View.OnClickListener, Base
         postId = extras.getString(EXTRA_ID);
         String postTitle = extras.getString(EXTRA_TITLE);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.info_toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_action_arrow_left);
-        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.colorWhite));
-        toolbar.setTitle(postTitle);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+
+        }
+        assert toolbar != null;
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                InfoActivity.super.onBackPressed();
+                onBackPressed();
             }
         });
+        assert actionBar != null;
+        actionBar.setTitle(postTitle);
 
         infoLayout = (LinearLayout) findViewById(R.id.infoLayout);
         if (isNetworkConnected())
